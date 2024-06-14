@@ -66,4 +66,4 @@ jobs:
         with:
           app-name: 'HealthonUSOCR'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0D1F7D8009DD4390861D01BEE65E84B3 }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_CBA7E59795A44AD2ACC2DA6AD8138020 }}
