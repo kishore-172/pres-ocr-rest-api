@@ -28,20 +28,25 @@ jobs:
           source venv/bin/activate
       
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install -r requirements.txt
+          # Install Tesseract OCR
+          sudo apt-get update
+          sudo apt-get install -y tesseract-ocr
+          # Install additional language packs if needed
+          # sudo apt-get install -y tesseract-ocr-all
         
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
       - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
+        run: zip -r release.zip .
 
       - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v2
         with:
           name: python-app
-          path: |
-            release.zip
-            !venv/
+          path: release.zip
+          exclude-path: venv
 
   deploy:
     runs-on: ubuntu-latest
@@ -50,18 +55,17 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v2
         with:
           name: python-app
 
       - name: Unzip artifact for deployment
-        run: unzip release.zip
+        run: unzip release.zip -d ${{ github.workspace }}
 
-      
       - name: Login to Azure
         uses: azure/login@v1
         with:
@@ -69,10 +73,9 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_EF24ED6AE6AC43788836E27B0A26D8FB }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_10108DC0013846DFA392067E3838FBE9 }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
         id: deploy-to-webapp
         with:
           app-name: 'HealthonusOCR-api'
           slot-name: 'Production'
-          
